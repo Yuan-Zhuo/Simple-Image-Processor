@@ -9,9 +9,9 @@ class ImageType(IntEnum):
     COLOR = 2
 
 
-def parse_kernal(kernal):
+def parse_kernel(kernel):
     try:
-        row, col = kernal.shape
+        row, col = kernel.shape
         assert ((row == col) & (row % 2 == 1))
     except:
         return 0
@@ -29,14 +29,14 @@ def parse_image(img):
         else:
             assert 0
     except:
-        return np.zeros(0), ImageType.INVALID
+        return np.zeros(0, dtype="int32"), ImageType.INVALID
     else:
-        return img_arr, img_type
+        return img_arr.astype(np.int32), img_type
 
 
 def get_value(img_arr, img_shape, point):
     if (((point[0] >= 0) & (point[0] < img_shape[0])) &
         ((point[1] >= 0) & (point[1] < img_shape[1]))):
-        return img_arr[point]
+        return np.int32(img_arr[point])
     else:
-        return np.zeros(img_arr[0][0].shape, dtype="uint8")
+        return np.zeros(img_arr[0][0].shape, dtype="int32")
