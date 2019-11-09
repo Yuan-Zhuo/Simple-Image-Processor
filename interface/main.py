@@ -5,15 +5,23 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
+from PIL import Image
 
 
 class MainINTF:
     def __init__(self):
+        self.init_config()
         self.init_window()
         self.init_widgets()
 
     def __call__(self):
         self.window.mainloop()
+
+    def init_config(self):
+        self.initialdir = "/"
+        self.filetypes = (('image files', ('*.bmp', '*.jpg', '*.jpeg', '*.png',
+                                           '*.gif', '*.tiff', '*.webp')),
+                          ('all files', '*'))
 
     def init_window(self):
         self.window = tk.Tk()
@@ -73,8 +81,10 @@ class MainINTF:
         self.menu.add_cascade(label='feedback', menu=self.feedback_menu)
 
     # handle function
-    def open_file(self):
-        pass
+    def open_file(self, event=None):
+        filepath = filedialog.askopenfilename(title='Select Image File',
+                                              initialdir=self.initialdir,
+                                              filetypes=self.filetypes)
 
     def save_file(self):
         pass
