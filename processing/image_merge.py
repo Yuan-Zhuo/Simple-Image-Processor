@@ -14,7 +14,7 @@ def image_merge(img_x, img_y):
     if ((img_shape != img_y_arr.shape) | (img_type != img_y_type)):
         raise TypeError('not equal image')
 
-    res_arr = np.zeros(img_shape, dtype="uint8")
+    res_arr = np.zeros(img_shape, dtype=np.uint8)
     for x in range(img_shape[0]):
         for y in range(img_shape[1]):
             tmp = img_x_arr[x][y] + img_y_arr[x][y]

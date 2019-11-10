@@ -13,7 +13,7 @@ def basic_convolution(img, kernel):
         raise TypeError('invalid image')
 
     img_shape = img_arr.shape
-    res_arr = np.zeros(img_shape, dtype="uint8")
+    res_arr = np.zeros(img_shape, dtype=np.uint8)
     for x in range(img_shape[0]):
         for y in range(img_shape[1]):
             if (img_type == ImageType.GRAYSCALE):
@@ -25,7 +25,7 @@ def basic_convolution(img, kernel):
                             (x + i, y + j)) * kernel[wd + i][wd + j]
                 res_arr[x][y] = max(min(round(tmp), 255), 0)
             else:
-                tmp_rgb = np.zeros(3, dtype="int64")
+                tmp_rgb = np.zeros(3, dtype=np.float64)
                 for i in range(-wd, wd + 1):
                     for j in range(-wd, wd + 1):
                         tmp_rgb += get_value(

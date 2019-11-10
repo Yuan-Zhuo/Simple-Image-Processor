@@ -29,7 +29,7 @@ def parse_image(img):
         else:
             assert 0
     except:
-        return np.zeros(0, dtype="int32"), ImageType.INVALID
+        return np.zeros(0, dtype=np.int32), ImageType.INVALID
     else:
         return img_arr.astype(np.int32), img_type
 
@@ -39,4 +39,25 @@ def get_value(img_arr, img_shape, point):
         ((point[1] >= 0) & (point[1] < img_shape[1]))):
         return np.int32(img_arr[point])
     else:
-        return np.zeros(img_arr[0][0].shape, dtype="int32")
+        return np.zeros(img_arr[0][0].shape, dtype=np.int32)
+
+
+# Gaussian function
+def gau(x, y, sigma):
+    return 1 / (2 * np.pi * (sigma)**2) * np.exp(-(x**2 + y**2) / (2 *
+                                                                   (sigma)**2))
+
+
+def gaussian_kernel(size, sigma):
+    wd = size // 2
+    M = np.zeros((size, size), dtype=np.float64)
+    s = 0
+    for i in range(-wd, wd + 1):
+        for j in range(-wd, wd + 1):
+            M[i + wd, j + wd] = gau(i, j, sigma)
+            s = s + M[i + wd, j + wd]
+
+    for i in range(M.shape[0]):
+        for j in range(M.shape[1]):
+            M[i, j] /= s
+    return M.astype(np.float64)
