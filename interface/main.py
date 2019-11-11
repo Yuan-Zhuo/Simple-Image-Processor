@@ -2,10 +2,17 @@
 
 # Tkinter
 import tkinter as tk
-from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
-from PIL import Image
+from PIL import Image, ImageTk, Image
+from functools import partial
+import os
+
+from processing.operators import sobel_operator, prewitt_operator, roberts_operator
+from processing.filters import mean_filter, median_filter, gaussian_filter
+from interface.opt import OptType
+from interface.version import Version
+from interface.box import InputDialog
 
 
 class MainINTF:
@@ -13,6 +20,7 @@ class MainINTF:
         self.init_config()
         self.init_window()
         self.init_widgets()
+        self.init_state()
 
     def __call__(self):
         self.window.mainloop()
@@ -22,6 +30,7 @@ class MainINTF:
         self.filetypes = (('image files', ('*.bmp', '*.jpg', '*.jpeg', '*.png',
                                            '*.gif', '*.tiff', '*.webp')),
                           ('all files', '*'))
+        self.parm = None
 
     def init_window(self):
         self.window = tk.Tk()
@@ -70,6 +79,31 @@ class MainINTF:
         # operation menu
         self.operation_menu = tk.Menu(self.menu, tearoff=False)
 
+        self.operation_menu.add_command(label='sobel operator',
+                                        command=partial(
+                                            self.edit_img,
+                                            OptType.SOBEL_OPERATOR))
+        self.operation_menu.add_command(label='prewitt operator',
+                                        command=partial(
+                                            self.edit_img,
+                                            OptType.PREWITT_OPERATOR))
+        self.operation_menu.add_command(label='roberts operator',
+                                        command=partial(
+                                            self.edit_img,
+                                            OptType.ROBERTS_OPERATOR))
+        self.operation_menu.add_command(label='mean filter',
+                                        command=partial(
+                                            self.edit_img,
+                                            OptType.MEAN_FILTER))
+        self.operation_menu.add_command(label='median filter',
+                                        command=partial(
+                                            self.edit_img,
+                                            OptType.MEDIAN_FILTER))
+        self.operation_menu.add_command(label='gaussian filter',
+                                        command=partial(
+                                            self.edit_img,
+                                            OptType.GAUSSIAN_FILTER))
+
         self.menu.add_cascade(label='operation', menu=self.operation_menu)
 
         # feedback menu
@@ -80,31 +114,102 @@ class MainINTF:
 
         self.menu.add_cascade(label='feedback', menu=self.feedback_menu)
 
+        # image panel
+        self.panel = tk.Label(self.window)
+        self.panel.pack(side="bottom", fill="both", expand="yes")
+
+    def init_state(self):
+        self.img = None
+        self.version = None
+
     # handle function
     def open_file(self, event=None):
-        filepath = filedialog.askopenfilename(title='Select Image File',
-                                              initialdir=self.initialdir,
-                                              filetypes=self.filetypes)
+        try:
+            filepath = filedialog.askopenfilename(title='Select Image File',
+                                                  initialdir=self.initialdir,
+                                                  filetypes=self.filetypes)
+            img = Image.open(filepath)
+            version = Version(img)
+        except:
+            return
+        else:
+            self.filepath = filepath
+            self.img = img
+            self.version = version
+            self.load_file()
 
-    def save_file(self):
+    def load_file(self):
+        if not self.img:
+            return
+
+        show_img = ImageTk.PhotoImage(self.version.current_version())
+        self.panel.configure(image=show_img)
+        self.panel.image = show_img
+
+    def edit_img(self, opt_type):
+        if not self.img:
+            return
+
+        switcher = {
+            OptType.MEAN_FILTER: mean_filter,
+            OptType.MEDIAN_FILTER: median_filter,
+            OptType.SOBEL_OPERATOR: sobel_operator,
+            OptType.PREWITT_OPERATOR: prewitt_operator,
+            OptType.ROBERTS_OPERATOR: roberts_operator
+        }
+
+        try:
+            if (opt_type == OptType.GAUSSIAN_FILTER):
+                self.parm = (3, 1)
+                in_dialog = InputDialog(self)
+                self.window.wait_window(in_dialog)
+                img_after = gaussian_filter(self.version.current_version(),
+                                            self.parm[0], self.parm[1])
+            else:
+                func = switcher.get(opt_type)
+                img_after = func(self.version.current_version())
+        except:
+            return
+        else:
+            self.version.add(img_after)
+            self.load_file()
+
+    def save_file(self, event=None):
+        try:
+            self.version.current_version().save(self.filepath)
+        except:
+            return
+
+    def save_file_as(self, event=None):
+        try:
+            dirname, filename = os.path.split(self.filepath)
+            filepath_save_as = filedialog.asksaveasfilename(
+                title='save as',
+                initialdir=dirname,
+                initialfile=filename,
+                filetypes=self.filetypes)
+            self.version.current_version().save(filepath_save_as)
+        except:
+            return
+
+    def quit_editor(self, event=None):
+        self.window.quit()
+
+    def undo_op(self, event=None):
+        try:
+            self.version.undo()
+        except:
+            return
+        else:
+            self.load_file()
+
+    def redo_op(self, event=None):
+        try:
+            self.version.redo()
+        except:
+            return
+        else:
+            self.load_file()
+
+    def display_repo(self, event=None):
         pass
-
-    def save_file_as(self):
-        pass
-
-    def quit_editor(self):
-        pass
-
-    def undo_op(self):
-        pass
-
-    def redo_op(self):
-        pass
-
-    def display_repo(self):
-        pass
-
-
-if __name__ == '__main__':
-    edt = MainINTF()
-    edt()

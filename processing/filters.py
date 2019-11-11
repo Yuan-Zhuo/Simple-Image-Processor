@@ -33,6 +33,6 @@ def median_filter(img, size=3):
     return Image.fromarray(res_arr)
 
 
-def gaussian_filter(img, size, sigma):
+def gaussian_filter(img, size=3, sigma=1):
     kernel = gaussian_kernel(size, sigma)
     return basic_convolution(img, kernel)
