@@ -3,5 +3,5 @@
 from interface import MainINTF
 
 if __name__ == '__main__':
-    edt = MainINTF()
-    edt()
+    editor = MainINTF()
+    editor()

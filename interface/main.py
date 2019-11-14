@@ -2,22 +2,25 @@
 
 # Tkinter
 import tkinter as tk
-from tkinter import filedialog
-from tkinter import messagebox
+from tkinter import filedialog, messagebox, ttk
+from tkinter.font import Font
 from PIL import Image, ImageTk, Image
 from functools import partial
 import os
+import numpy as np
+import webbrowser
 
-from processing.operators import sobel_operator, prewitt_operator, roberts_operator
+from processing.operators import basic_operator, sobel_operator, prewitt_operator, roberts_operator
 from processing.filters import mean_filter, median_filter, gaussian_filter
 from interface.opt import OptType
 from interface.version import Version
-from interface.box import InputDialog
+from interface.box import GaussianDialog, CustomizeDialog
 
 
 class MainINTF:
     def __init__(self):
         self.init_config()
+        self.init_sytle()
         self.init_window()
         self.init_widgets()
         self.init_state()
@@ -26,17 +29,24 @@ class MainINTF:
         self.window.mainloop()
 
     def init_config(self):
-        self.initialdir = "/"
+        os.chdir('img')
+        self.initialdir = os.getcwd()
+        os.chdir('..')
         self.filetypes = (('image files', ('*.bmp', '*.jpg', '*.jpeg', '*.png',
                                            '*.gif', '*.tiff', '*.webp')),
                           ('all files', '*'))
         self.parm = None
+
+    def init_sytle(self):
+        self.menu_font = ('Comic Sans MS', 10)
 
     def init_window(self):
         self.window = tk.Tk()
         self.window.title('Simple Raster Graphics Editor')
         self.window.geometry('800x400')
         self.window.minsize(400, 200)
+        self.window.resizable(0, 0)
+        self.window.iconbitmap('./img/title.ico')
 
     def init_widgets(self):
         # main menu
@@ -79,18 +89,6 @@ class MainINTF:
         # operation menu
         self.operation_menu = tk.Menu(self.menu, tearoff=False)
 
-        self.operation_menu.add_command(label='sobel operator',
-                                        command=partial(
-                                            self.edit_img,
-                                            OptType.SOBEL_OPERATOR))
-        self.operation_menu.add_command(label='prewitt operator',
-                                        command=partial(
-                                            self.edit_img,
-                                            OptType.PREWITT_OPERATOR))
-        self.operation_menu.add_command(label='roberts operator',
-                                        command=partial(
-                                            self.edit_img,
-                                            OptType.ROBERTS_OPERATOR))
         self.operation_menu.add_command(label='mean filter',
                                         command=partial(
                                             self.edit_img,
@@ -103,6 +101,22 @@ class MainINTF:
                                         command=partial(
                                             self.edit_img,
                                             OptType.GAUSSIAN_FILTER))
+        self.operation_menu.add_command(label='sobel operator',
+                                        command=partial(
+                                            self.edit_img,
+                                            OptType.SOBEL_OPERATOR))
+        self.operation_menu.add_command(label='prewitt operator',
+                                        command=partial(
+                                            self.edit_img,
+                                            OptType.PREWITT_OPERATOR))
+        self.operation_menu.add_command(label='roberts operator',
+                                        command=partial(
+                                            self.edit_img,
+                                            OptType.ROBERTS_OPERATOR))
+        self.operation_menu.add_command(label='customize operator',
+                                        command=partial(
+                                            self.edit_img,
+                                            OptType.CUSTOMIZE_OPERATOR))
 
         self.menu.add_cascade(label='operation', menu=self.operation_menu)
 
@@ -118,11 +132,20 @@ class MainINTF:
         self.panel = tk.Label(self.window)
         self.panel.pack(side="bottom", fill="both", expand="yes")
 
+        self.config_font(self.file_menu, self.menu_font)
+        self.config_font(self.edit_menu, self.menu_font)
+        self.config_font(self.operation_menu, self.menu_font)
+        self.config_font(self.feedback_menu, self.menu_font)
+
     def init_state(self):
         self.img = None
         self.version = None
 
     # handle function
+    def config_font(self, widgt, style_tuple):
+        style = Font(family=style_tuple[0], size=style_tuple[1])
+        widgt.configure(font=style)
+
     def open_file(self, event=None):
         try:
             filepath = filedialog.askopenfilename(title='Select Image File',
@@ -155,16 +178,21 @@ class MainINTF:
             OptType.MEDIAN_FILTER: median_filter,
             OptType.SOBEL_OPERATOR: sobel_operator,
             OptType.PREWITT_OPERATOR: prewitt_operator,
-            OptType.ROBERTS_OPERATOR: roberts_operator
+            OptType.ROBERTS_OPERATOR: roberts_operator,
+            OptType.CUSTOMIZE_OPERATOR: basic_operator
         }
 
         try:
             if (opt_type == OptType.GAUSSIAN_FILTER):
-                self.parm = (3, 1)
-                in_dialog = InputDialog(self)
-                self.window.wait_window(in_dialog)
+                self.parm = (0, 0)
+                self.window.wait_window(GaussianDialog(self))
                 img_after = gaussian_filter(self.version.current_version(),
                                             self.parm[0], self.parm[1])
+            elif (opt_type == OptType.CUSTOMIZE_OPERATOR):
+                self.parm = (np.zeros(0), np.zeros(0))
+                CustomizeDialog(self)
+                img_after = basic_operator(self.version.current_version(),
+                                           self.parm[0], self.parm[1])
             else:
                 func = switcher.get(opt_type)
                 img_after = func(self.version.current_version())
@@ -212,4 +240,5 @@ class MainINTF:
             self.load_file()
 
     def display_repo(self, event=None):
-        pass
+        webbrowser.open("https://github.com/Yuan-Zhuo/Simple-Image-Processor",
+                        new=0)
