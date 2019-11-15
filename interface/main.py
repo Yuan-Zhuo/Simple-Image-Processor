@@ -9,12 +9,14 @@ from functools import partial
 import os
 import numpy as np
 import webbrowser
+import base64
 
 from processing.operators import basic_operator, sobel_operator, prewitt_operator, roberts_operator
 from processing.filters import mean_filter, median_filter, gaussian_filter
 from interface.opt import OptType
 from interface.version import Version
 from interface.box import GaussianDialog, CustomizeDialog
+from interface.icon import icon_img
 
 
 class MainINTF:
@@ -22,6 +24,7 @@ class MainINTF:
         self.init_config()
         self.init_sytle()
         self.init_window()
+        self.init_icon()
         self.init_widgets()
         self.init_state()
 
@@ -29,9 +32,15 @@ class MainINTF:
         self.window.mainloop()
 
     def init_config(self):
-        os.chdir('img')
-        self.initialdir = os.getcwd()
-        os.chdir('..')
+        try:
+            os.chdir('img')
+            initialdir = os.getcwd()
+            os.chdir('..')
+        except:
+            initialdir = os.getcwd()
+        finally:
+            self.initialdir = initialdir
+
         self.filetypes = (('image files', ('*.bmp', '*.jpg', '*.jpeg', '*.png',
                                            '*.gif', '*.tiff', '*.webp')),
                           ('all files', '*'))
@@ -46,7 +55,13 @@ class MainINTF:
         self.window.geometry('800x400')
         self.window.minsize(400, 200)
         self.window.resizable(0, 0)
-        self.window.iconbitmap('./img/title.ico')
+
+    def init_icon(self):
+        tmp = open("temp.ico", "wb+")
+        tmp.write(base64.b64decode(icon_img))
+        tmp.close()
+        self.window.iconbitmap("temp.ico")
+        os.remove("temp.ico")
 
     def init_widgets(self):
         # main menu
