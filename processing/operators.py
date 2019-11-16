@@ -17,12 +17,12 @@ def sobel_operator(img):
 
 
 def prewitt_operator(img):
-    kernel_x = np.array([[-1, -1, 1], [0, 0, 0], [1, 1, 1]])
-    kernel_y = np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]])
+    kernel_x = np.array([[1, 0, -1], [1, 0, -1], [1, 0, -1]])
+    kernel_y = np.array([[-1, -1, -1], [0, 0, 0], [1, 1, 1]])
     return basic_operator(img, kernel_x, kernel_y)
 
 
 def roberts_operator(img):
     kernel_x = np.array([[0, 0, 0], [0, -1, 0], [0, 0, 1]])
-    kernel_y = np.array([[0, 0, 0], [0, 0, -1], [0, 1, 0]])
+    kernel_y = np.array([[0, 0, 0], [0, 0, 1], [0, -1, 0]])
     return basic_operator(img, kernel_x, kernel_y)
