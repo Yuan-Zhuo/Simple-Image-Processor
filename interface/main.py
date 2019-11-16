@@ -4,7 +4,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from tkinter.font import Font
-from PIL import Image, ImageTk, Image
+from PIL import Image, ImageTk
 from functools import partial
 import os
 import numpy as np
@@ -54,7 +54,6 @@ class MainINTF:
         self.window.title('Simple Raster Graphics Editor')
         self.window.geometry('800x400')
         self.window.minsize(400, 200)
-        self.window.resizable(0, 0)
 
     def init_icon(self):
         tmp = open("temp.ico", "wb+")
@@ -145,7 +144,16 @@ class MainINTF:
 
         # image panel
         self.panel = tk.Label(self.window)
-        self.panel.pack(side="bottom", fill="both", expand="yes")
+        self.panel.pack(fill=tk.BOTH, expand=1)
+        self.panel.bind('<Configure>', self.load_file)
+
+        # status bar
+        self.status_bar = tk.Label(self.window,
+                                   text='ready',
+                                   bd=1,
+                                   relief=tk.SUNKEN,
+                                   anchor=tk.W)
+        self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
         self.config_font(self.file_menu, self.menu_font)
         self.config_font(self.edit_menu, self.menu_font)
@@ -157,6 +165,32 @@ class MainINTF:
         self.version = None
 
     # handle function
+    def resize_img(self, w_box, h_box, pil_image):
+        w, h = pil_image.size
+        f1 = 1.0 * w_box / w
+        f2 = 1.0 * h_box / h
+        factor = min([f1, f2])
+        width = int(w * factor)
+        height = int(h * factor)
+        return pil_image.resize((width, height), Image.ANTIALIAS)
+
+    def update_status_bar(self):
+        try:
+            width, height = self.img.size
+            flag = False
+            for i in range(width):
+                for j in range(height):
+                    r, g, b = self.img.getpixel((i, j))
+                    if r != g != b:
+                        flag = True
+                        break
+        except:
+            self.status_bar.config(text='ready')
+        else:
+            self.status_bar.config(
+                text='ready\tsize:({}, {})\tmode: {}'.format(
+                    width, height, 'RGB' if flag else 'GRAY'))
+
     def config_font(self, widgt, style_tuple):
         style = Font(family=style_tuple[0], size=style_tuple[1])
         widgt.configure(font=style)
@@ -175,14 +209,23 @@ class MainINTF:
             self.img = img
             self.version = version
             self.load_file()
+            self.update_status_bar()
 
-    def load_file(self):
+    def load_file(self, event=None):
         if not self.img:
             return
+        try:
+            show_img = self.version.current_version()
+            max_width = self.window.winfo_width() * 0.8
+            max_height = self.window.winfo_height() * 0.8
 
-        show_img = ImageTk.PhotoImage(self.version.current_version())
-        self.panel.configure(image=show_img)
-        self.panel.image = show_img
+            show_img_resized = ImageTk.PhotoImage(
+                self.resize_img(max_width, max_height, show_img))
+        except:
+            return
+        else:
+            self.panel.configure(image=show_img_resized)
+            self.panel.image = show_img_resized
 
     def edit_img(self, opt_type):
         if not self.img:
