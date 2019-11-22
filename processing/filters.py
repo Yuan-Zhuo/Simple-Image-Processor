@@ -1,6 +1,6 @@
 from PIL import Image
 from processing.basic_convolution import basic_convolution
-from processing.image_merge import image_merge
+from processing.image_opt import image_merge
 from processing.util import parse_kernel, parse_image, get_value, ImageType, gaussian_kernel
 import numpy as np
 

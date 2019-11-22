@@ -9,6 +9,12 @@ class ImageType(IntEnum):
     COLOR = 2
 
 
+class MorphOptType(IntEnum):
+    INVALID = 0
+    DILATION = 1
+    EROSION = 2
+
+
 def parse_se(se, center):
     try:
         row, col = se.shape
@@ -54,6 +60,22 @@ def parse_image(img):
             img_type = ImageType.COLOR
         else:
             assert 0
+    except:
+        return None, ImageType.INVALID
+    else:
+        return img_arr.astype(np.int32), img_type
+
+
+def parse_binary_image(img):
+    try:
+        img_arr = np.array(img)
+        if (len(img_arr.shape) == 2):
+            img_type = ImageType.GRAYSCALE
+        elif (len(img_arr.shape) == 3):
+            img_type = ImageType.COLOR
+        else:
+            assert 0
+
     except:
         return None, ImageType.INVALID
     else:
