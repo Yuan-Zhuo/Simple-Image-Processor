@@ -9,6 +9,32 @@ class ImageType(IntEnum):
     COLOR = 2
 
 
+def parse_se(se, center):
+    try:
+        row, col = se.shape
+        assert ((row > 0) & (col > 0))
+        assert ((center[0] < row) & (center[0] >= 0))
+        assert ((center[1] < col) & (center[1] >= 0))
+    except:
+        return None
+    else:
+        return (center[0], row - center[0] - 1, center[1], col - center[1] - 1)
+
+
+def parse_binary_se(se, center):
+    try:
+        row, col = se.shape
+        assert ((row > 0) & (col > 0))
+        assert ((center[0] < row) & (center[0] >= 0))
+        assert ((center[1] < col) & (center[1] >= 0))
+        for a in np.nditer(se):
+            assert ((a in (0, 1)))
+    except:
+        return None
+    else:
+        return (center[0], row - center[0] - 1, center[1], col - center[1] - 1)
+
+
 def parse_kernel(kernel):
     try:
         row, col = kernel.shape
@@ -29,7 +55,7 @@ def parse_image(img):
         else:
             assert 0
     except:
-        return np.zeros(0, dtype=np.int32), ImageType.INVALID
+        return None, ImageType.INVALID
     else:
         return img_arr.astype(np.int32), img_type
 
