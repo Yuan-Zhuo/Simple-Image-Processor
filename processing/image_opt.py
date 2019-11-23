@@ -65,7 +65,8 @@ def image_equal(img_x, img_y):
 def gray_image_min(img_x, img_y):
     img_x_arr, img_x_type = parse_image(img_x)
     img_y_arr, img_y_type = parse_image(img_y)
-    if ((img_x_type == ImageType.INVALID) | (img_y_type == ImageType.INVALID)):
+    if ((img_x_type != ImageType.GRAYSCALE) |
+        (img_y_type != ImageType.GRAYSCALE)):
         raise TypeError('invalid image')
 
     img_type = img_x_type
@@ -83,7 +84,7 @@ def gray_image_max(img_x, img_y):
     img_x_arr, img_x_type = parse_image(img_x)
     img_y_arr, img_y_type = parse_image(img_y)
     if ((img_x_type != ImageType.GRAYSCALE) |
-        (img_y_type == ImageType.GRAYSCALE)):
+        (img_y_type != ImageType.GRAYSCALE)):
         raise TypeError('grayscale image expected')
 
     img_type = img_x_type

@@ -9,10 +9,17 @@ class ImageType(IntEnum):
     COLOR = 2
 
 
-class MorphOptType(IntEnum):
+class MorphReconstructOptType(IntEnum):
     INVALID = 0
     DILATION = 1
     EROSION = 2
+
+
+class MorphGradientOptType(IntEnum):
+    INVALID = 0
+    BASIC = 1
+    INTERNAL = 2
+    EXTERNAL = 3
 
 
 def parse_se(se, center):
