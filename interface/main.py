@@ -13,7 +13,7 @@ import base64
 
 from processing.operators import basic_operator, sobel_operator, prewitt_operator, roberts_operator
 from processing.filters import mean_filter, median_filter, gaussian_filter
-from interface.opt import OptType
+from interface.opt_type import *
 from interface.version import Version
 from interface.box import GaussianDialog, CustomizeDialog
 from interface.icon import icon_img
@@ -105,32 +105,94 @@ class MainINTF:
 
         self.operation_menu.add_command(label='mean filter',
                                         command=partial(
-                                            self.edit_img,
-                                            OptType.MEAN_FILTER))
+                                            self.edit_img_convolution,
+                                            ConvolutionOptType.MEAN_FILTER))
         self.operation_menu.add_command(label='median filter',
                                         command=partial(
-                                            self.edit_img,
-                                            OptType.MEDIAN_FILTER))
-        self.operation_menu.add_command(label='gaussian filter',
-                                        command=partial(
-                                            self.edit_img,
-                                            OptType.GAUSSIAN_FILTER))
+                                            self.edit_img_convolution,
+                                            ConvolutionOptType.MEDIAN_FILTER))
+        self.operation_menu.add_command(
+            label='gaussian filter',
+            command=partial(self.edit_img_convolution,
+                            ConvolutionOptType.GAUSSIAN_FILTER))
         self.operation_menu.add_command(label='sobel operator',
                                         command=partial(
-                                            self.edit_img,
-                                            OptType.SOBEL_OPERATOR))
-        self.operation_menu.add_command(label='prewitt operator',
-                                        command=partial(
-                                            self.edit_img,
-                                            OptType.PREWITT_OPERATOR))
-        self.operation_menu.add_command(label='roberts operator',
-                                        command=partial(
-                                            self.edit_img,
-                                            OptType.ROBERTS_OPERATOR))
-        self.operation_menu.add_command(label='customize operator',
-                                        command=partial(
-                                            self.edit_img,
-                                            OptType.CUSTOMIZE_OPERATOR))
+                                            self.edit_img_convolution,
+                                            ConvolutionOptType.SOBEL_OPERATOR))
+        self.operation_menu.add_command(
+            label='prewitt operator',
+            command=partial(self.edit_img_convolution,
+                            ConvolutionOptType.PREWITT_OPERATOR))
+        self.operation_menu.add_command(
+            label='roberts operator',
+            command=partial(self.edit_img_convolution,
+                            ConvolutionOptType.ROBERTS_OPERATOR))
+        self.operation_menu.add_command(
+            label='customize operator',
+            command=partial(self.edit_img_convolution,
+                            ConvolutionOptType.CUSTOMIZE_OPERATOR))
+
+        # binary morph operation menu
+        self.morph_binary_menu = tk.Menu(self.operation_menu, tearoff=False)
+
+        # edge detection
+        self.edge_detection_submenu = tk.Menu(self.morph_binary_menu,
+                                              tearoff=False)
+
+        self.edge_detection_submenu.add_command(label='standard', command=None)
+        self.edge_detection_submenu.add_command(label='internal', command=None)
+        self.edge_detection_submenu.add_command(label='external', command=None)
+
+        self.morph_binary_menu.add_cascade(label='Edge Detection',
+                                           menu=self.edge_detection_submenu)
+
+        # reconstruction(binary)
+        self.reconstruction_binary_submenu = tk.Menu(self.morph_binary_menu,
+                                                     tearoff=False)
+
+        self.reconstruction_binary_submenu.add_command(
+            label='conditional dilation', command=None)
+        self.reconstruction_binary_submenu.add_command(
+            label='conditional erosion', command=None)
+
+        self.morph_binary_menu.add_cascade(
+            label='Reconstruction', menu=self.reconstruction_binary_submenu)
+
+        self.operation_menu.add_cascade(label='Binary Morphological',
+                                        menu=self.morph_binary_menu)
+
+        # grayscale morph operation menu
+        self.morph_grayscale_menu = tk.Menu(self.operation_menu, tearoff=False)
+
+        # reconstruction(grayscale)
+        self.reconstruction_grayscale_submenu = tk.Menu(
+            self.morph_grayscale_menu, tearoff=False)
+
+        self.reconstruction_grayscale_submenu.add_command(
+            label='geodesic dilation', command=None)
+        self.reconstruction_grayscale_submenu.add_command(
+            label='geodesic erosion', command=None)
+        self.reconstruction_grayscale_submenu.add_command(
+            label='open operation', command=None)
+        self.reconstruction_grayscale_submenu.add_command(
+            label='close operation', command=None)
+
+        self.morph_grayscale_menu.add_cascade(
+            label='Reconstruction', menu=self.reconstruction_grayscale_submenu)
+
+        # gradient
+        self.gradient_submenu = tk.Menu(self.morph_grayscale_menu,
+                                        tearoff=False)
+
+        self.gradient_submenu.add_command(label='standard', command=None)
+        self.gradient_submenu.add_command(label='external', command=None)
+        self.gradient_submenu.add_command(label='internal', command=None)
+
+        self.morph_grayscale_menu.add_cascade(label='Gradient',
+                                              menu=self.gradient_submenu)
+
+        self.operation_menu.add_cascade(label='Grayscale Morphological',
+                                        menu=self.morph_grayscale_menu)
 
         self.menu.add_cascade(label='operation', menu=self.operation_menu)
 
@@ -227,26 +289,26 @@ class MainINTF:
             self.panel.configure(image=show_img_resized)
             self.panel.image = show_img_resized
 
-    def edit_img(self, opt_type):
+    def edit_img_convolution(self, opt_type):
         if not self.img:
             return
 
         switcher = {
-            OptType.MEAN_FILTER: mean_filter,
-            OptType.MEDIAN_FILTER: median_filter,
-            OptType.SOBEL_OPERATOR: sobel_operator,
-            OptType.PREWITT_OPERATOR: prewitt_operator,
-            OptType.ROBERTS_OPERATOR: roberts_operator,
-            OptType.CUSTOMIZE_OPERATOR: basic_operator
+            ConvolutionOptType.MEAN_FILTER: mean_filter,
+            ConvolutionOptType.MEDIAN_FILTER: median_filter,
+            ConvolutionOptType.SOBEL_OPERATOR: sobel_operator,
+            ConvolutionOptType.PREWITT_OPERATOR: prewitt_operator,
+            ConvolutionOptType.ROBERTS_OPERATOR: roberts_operator,
+            ConvolutionOptType.CUSTOMIZE_OPERATOR: basic_operator
         }
 
         try:
-            if (opt_type == OptType.GAUSSIAN_FILTER):
+            if (opt_type == ConvolutionOptType.GAUSSIAN_FILTER):
                 self.parm = (0, 0)
                 self.window.wait_window(GaussianDialog(self))
                 img_after = gaussian_filter(self.version.current_version(),
                                             self.parm[0], self.parm[1])
-            elif (opt_type == OptType.CUSTOMIZE_OPERATOR):
+            elif (opt_type == ConvolutionOptType.CUSTOMIZE_OPERATOR):
                 self.parm = (np.zeros(0), np.zeros(0))
                 CustomizeDialog(self)
                 img_after = basic_operator(self.version.current_version(),

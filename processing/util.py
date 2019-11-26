@@ -9,21 +9,6 @@ class ImageType(IntEnum):
     COLOR = 2
 
 
-class MorphReconstructOptType(IntEnum):
-    INVALID = 0
-    GEODESIC_DILATION = 1
-    GEODESIC_EROSION = 2
-    OPEN = 3
-    CLOSE = 4
-
-
-class MorphGradientOptType(IntEnum):
-    INVALID = 0
-    STANDRARD = 1
-    INTERNAL = 2
-    EXTERNAL = 3
-
-
 def parse_se(se, center):
     try:
         row, col = se.shape

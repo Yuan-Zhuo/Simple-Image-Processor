@@ -51,6 +51,18 @@ def binary_erosion(img, se, center):
     return Image.fromarray(res_arr)
 
 
+# 二值测地膨胀
+def binary_geodesic_dilation(img_f, img_g, se, center):
+    img_res = binary_dilation(img_f, se, center)
+    return grayscale_image_min(img_res, img_f)
+
+
+# 二值测地腐蚀
+def binary_geodesic_erosion(img_f, img_g, se, center):
+    img_res = binary_erosion(img_f, se, center)
+    return grayscale_image_max(img_res, img_f)
+
+
 # 灰度膨胀-结构元 0-255
 def grayscale_dilation(img, se, center):
     wd_tuple = parse_se(se, center)
