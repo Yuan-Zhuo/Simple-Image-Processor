@@ -11,13 +11,15 @@ class ImageType(IntEnum):
 
 class MorphReconstructOptType(IntEnum):
     INVALID = 0
-    DILATION = 1
-    EROSION = 2
+    GEODESIC_DILATION = 1
+    GEODESIC_EROSION = 2
+    OPEN = 3
+    CLOSE = 4
 
 
 class MorphGradientOptType(IntEnum):
     INVALID = 0
-    BASIC = 1
+    STANDRARD = 1
     INTERNAL = 2
     EXTERNAL = 3
 

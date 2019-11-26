@@ -4,16 +4,26 @@ from processing.util import parse_image, get_value, ImageType
 import math
 
 
+def image_comp(img_x, img_y):
+    try:
+        img_x_arr, img_x_type = parse_image(img_x)
+        img_y_arr, img_y_type = parse_image(img_y)
+        assert ((img_x_type != ImageType.INVALID))
+        assert ((img_y_type != ImageType.INVALID))
+    except:
+        raise TypeError('two images invalid')
+    else:
+        return img_x_arr, img_x_type, img_y_arr, img_y_type
+
+
 def image_merge(img_x, img_y):
-    img_x_arr, img_x_type = parse_image(img_x)
-    img_y_arr, img_y_type = parse_image(img_y)
-    if ((img_x_type == ImageType.INVALID) | (img_y_type == ImageType.INVALID)):
-        raise TypeError('invalid image')
+    img_x_arr, img_x_type, img_y_arr, _ = image_comp(img_x, img_y)
+
+    if ((img_x_arr.shape != img_y_arr.shape)):
+        raise TypeError('merge images type error')
 
     img_shape = img_x_arr.shape
     img_type = img_x_type
-    if ((img_shape != img_y_arr.shape) | (img_type != img_y_type)):
-        raise TypeError('not equal image')
 
     res_arr = np.zeros(img_shape, dtype=np.uint8)
     for x in range(img_shape[0]):
@@ -28,15 +38,12 @@ def image_merge(img_x, img_y):
 
 
 def image_absdiff(img_x, img_y):
-    img_x_arr, img_x_type = parse_image(img_x)
-    img_y_arr, img_y_type = parse_image(img_y)
-    if ((img_x_type == ImageType.INVALID) | (img_y_type == ImageType.INVALID)):
-        raise TypeError('invalid image')
+    img_x_arr, _, img_y_arr, _ = image_comp(img_x, img_y)
+
+    if ((img_x_arr.shape != img_y_arr.shape)):
+        raise TypeError('absdiff images type error')
 
     img_shape = img_x_arr.shape
-    img_type = img_x_type
-    if ((img_shape != img_y_arr.shape) | (img_type != img_y_type)):
-        raise TypeError('not equal image')
 
     res_arr = np.zeros(img_shape, dtype=np.uint8)
     for x in range(img_shape[0]):
@@ -46,15 +53,20 @@ def image_absdiff(img_x, img_y):
     return Image.fromarray(res_arr)
 
 
-def image_equal(img_x, img_y):
-    img_x_arr, img_x_type = parse_image(img_x)
-    img_y_arr, img_y_type = parse_image(img_y)
-    if ((img_x_type == ImageType.INVALID) | (img_y_type == ImageType.INVALID)):
-        raise TypeError('invalid image')
+def image_divide(img, n):
+    img_arr, img_type = parse_image(img)
+    if ((img_type == ImageType.INVALID)):
+        raise TypeError('image invalid')
 
-    img_type = img_x_type
-    if ((img_type != img_y_type)):
-        raise TypeError('different type image')
+    res_arr = np.floor_divide(img_arr, n)
+    return Image.fromarray(res_arr.astype(np.uint8))
+
+
+def image_equal(img_x, img_y):
+    img_x_arr, img_x_type, img_y_arr, img_y_type = image_comp(img_x, img_y)
+
+    if ((img_x_type != img_y_type)):
+        raise TypeError('compare images type error')
 
     img_shape = np.minimum(img_x_arr.shape, img_y_arr.shape)
     img_x_arr = img_x_arr[:img_shape[0], :img_shape[1]]
@@ -62,16 +74,17 @@ def image_equal(img_x, img_y):
     return np.array_equal(img_x_arr, img_y_arr)
 
 
-def gray_image_min(img_x, img_y):
-    img_x_arr, img_x_type = parse_image(img_x)
-    img_y_arr, img_y_type = parse_image(img_y)
+# ostu
+def image_binary(img):
+    pass
+
+
+def grayscale_image_min(img_x, img_y):
+    img_x_arr, img_x_type, img_y_arr, img_y_type = image_comp(img_x, img_y)
+
     if ((img_x_type != ImageType.GRAYSCALE) |
         (img_y_type != ImageType.GRAYSCALE)):
-        raise TypeError('invalid image')
-
-    img_type = img_x_type
-    if ((img_type != img_y_type)):
-        raise TypeError('different type image')
+        raise TypeError('grayscale min images type error')
 
     img_shape = np.minimum(img_x_arr.shape, img_y_arr.shape)
     img_x_arr = img_x_arr[:img_shape[0], :img_shape[1]]
@@ -80,16 +93,12 @@ def gray_image_min(img_x, img_y):
     return Image.fromarray(res_arr.astype(np.uint8))
 
 
-def gray_image_max(img_x, img_y):
-    img_x_arr, img_x_type = parse_image(img_x)
-    img_y_arr, img_y_type = parse_image(img_y)
+def grayscale_image_max(img_x, img_y):
+    img_x_arr, img_x_type, img_y_arr, img_y_type = image_comp(img_x, img_y)
+
     if ((img_x_type != ImageType.GRAYSCALE) |
         (img_y_type != ImageType.GRAYSCALE)):
-        raise TypeError('grayscale image expected')
-
-    img_type = img_x_type
-    if ((img_type != img_y_type)):
-        raise TypeError('different type image')
+        raise TypeError('grayscale max images type error')
 
     img_shape = np.minimum(img_x_arr.shape, img_y_arr.shape)
     img_x_arr = img_x_arr[:img_shape[0], :img_shape[1]]

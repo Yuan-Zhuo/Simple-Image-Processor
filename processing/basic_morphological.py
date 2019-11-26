@@ -1,6 +1,7 @@
 import numpy as np
 from PIL import Image
 from processing.util import parse_se, parse_image, ImageType, get_value, parse_binary_se, parse_binary_image
+from processing.image_opt import grayscale_image_min, grayscale_image_max
 import math
 
 
@@ -152,3 +153,15 @@ def grayscale_erosion(img, se, center):
                             se[i + center[0]][j + center[1]])
                 res_arr[x][y] = max(val_min, 0)
     return Image.fromarray(res_arr)
+
+
+# 测地膨胀
+def geodesic_dilation(img_f, img_g, se, center):
+    img_res = grayscale_dilation(img_f, se, center)
+    return grayscale_image_min(img_res, img_f)
+
+
+# 测地腐蚀
+def geodesic_erosion(img_f, img_g, se, center):
+    img_res = grayscale_erosion(img_f, se, center)
+    return grayscale_image_max(img_res, img_f)
