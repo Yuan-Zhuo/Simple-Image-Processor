@@ -74,9 +74,17 @@ def image_equal(img_x, img_y):
     return np.array_equal(img_x_arr, img_y_arr)
 
 
-# ostu
 def image_binary(img):
-    pass
+    img_arr, img_type = parse_image(img)
+    if ((img_type != ImageType.GRAYSCALE)):
+        raise TypeError('image invalid')
+
+    img_shape = img_arr.shape
+    res_arr = np.zeros(img_shape, dtype=np.uint8)
+    for x in range(img_shape[0]):
+        for y in range(img_shape[1]):
+            res_arr[x][y] = 0 if img_arr[x][y] < 128 else 1
+    return res_arr
 
 
 def grayscale_image_min(img_x, img_y):

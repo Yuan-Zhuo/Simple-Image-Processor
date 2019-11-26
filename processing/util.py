@@ -75,22 +75,6 @@ def parse_image(img):
         return img_arr.astype(np.int32), img_type
 
 
-def parse_binary_image(img):
-    try:
-        img_arr = np.array(img)
-        if (len(img_arr.shape) == 2):
-            img_type = ImageType.GRAYSCALE
-        elif (len(img_arr.shape) == 3):
-            img_type = ImageType.COLOR
-        else:
-            assert 0
-
-    except:
-        return None, ImageType.INVALID
-    else:
-        return img_arr.astype(np.int32), img_type
-
-
 def get_value(img_arr, img_shape, point):
     if (((point[0] >= 0) & (point[0] < img_shape[0])) &
         ((point[1] >= 0) & (point[1] < img_shape[1]))):

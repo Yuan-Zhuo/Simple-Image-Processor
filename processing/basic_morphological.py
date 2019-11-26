@@ -1,7 +1,7 @@
 import numpy as np
 from PIL import Image
-from processing.util import parse_se, parse_image, ImageType, get_value, parse_binary_se, parse_binary_image
-from processing.image_opt import grayscale_image_min, grayscale_image_max
+from processing.util import parse_se, parse_image, ImageType, get_value, parse_binary_se
+from processing.image_opt import grayscale_image_min, grayscale_image_max, image_binary
 import math
 
 
@@ -11,34 +11,20 @@ def binary_dilation(img, se, center):
     if (wd_tuple == None):
         raise TypeError('invalid se')
 
-    img_arr, img_type = parse_binary_image(img)
-    if (img_type == ImageType.INVALID):
-        raise TypeError('invalid image')
+    img_arr = image_binary(img)
 
     img_shape = img_arr.shape
     res_arr = np.zeros(img_shape, dtype=np.uint8)
     for x in range(img_shape[0]):
         for y in range(img_shape[1]):
-            if (img_type == ImageType.COLOR):
-                val_max_rgb = np.zeros(3, dtype=np.int32)
-                for i in range(-wd_tuple[0], wd_tuple[1] + 1):
-                    for j in range(-wd_tuple[2], wd_tuple[3] + 1):
-                        if (se[i + center[0]][j + center[1]]):
-                            val_point = get_value(img_arr, img_shape,
-                                                  (x + i, y + j))
-                            for k in range(3):
-                                val_max_rgb[k] = max(val_max_rgb[k],
-                                                     val_point[k])
-                res_arr[x][y] = val_max_rgb
-            else:
-                val_max = 0
-                for i in range(-wd_tuple[0], wd_tuple[1] + 1):
-                    for j in range(-wd_tuple[2], wd_tuple[3] + 1):
-                        if (se[i + center[0]][j + center[1]]):
-                            val_max = max(
-                                val_max,
-                                get_value(img_arr, img_shape, (x + i, y + j)))
-                res_arr[x][y] = val_max
+            val_max = 0
+            for i in range(-wd_tuple[0], wd_tuple[1] + 1):
+                for j in range(-wd_tuple[2], wd_tuple[3] + 1):
+                    if (se[i + center[0]][j + center[1]]):
+                        val_max = max(
+                            val_max,
+                            get_value(img_arr, img_shape, (x + i, y + j)))
+            res_arr[x][y] = val_max
     return Image.fromarray(res_arr)
 
 
@@ -48,34 +34,20 @@ def binary_erosion(img, se, center):
     if (wd_tuple == None):
         raise TypeError('invalid se')
 
-    img_arr, img_type = parse_binary_image(img)
-    if (img_type == ImageType.INVALID):
-        raise TypeError('invalid image')
+    img_arr = image_binary(img)
 
     img_shape = img_arr.shape
     res_arr = np.zeros(img_shape, dtype=np.uint8)
     for x in range(img_shape[0]):
         for y in range(img_shape[1]):
-            if (img_type == ImageType.COLOR):
-                val_max_rgb = np.full(3, 255, dtype=np.int32)
-                for i in range(-wd_tuple[0], wd_tuple[1] + 1):
-                    for j in range(-wd_tuple[2], wd_tuple[3] + 1):
-                        if (se[i + center[0]][j + center[1]]):
-                            val_point = get_value(img_arr, img_shape,
-                                                  (x + i, y + j))
-                            for k in range(3):
-                                val_max_rgb[k] = min(val_max_rgb[k],
-                                                     val_point[k])
-                res_arr[x][y] = val_max_rgb
-            else:
-                val_max = 255
-                for i in range(-wd_tuple[0], wd_tuple[1] + 1):
-                    for j in range(-wd_tuple[2], wd_tuple[3] + 1):
-                        if (se[i + center[0]][j + center[1]]):
-                            val_max = min(
-                                val_max,
-                                get_value(img_arr, img_shape, (x + i, y + j)))
-                res_arr[x][y] = val_max
+            val_max = 255
+            for i in range(-wd_tuple[0], wd_tuple[1] + 1):
+                for j in range(-wd_tuple[2], wd_tuple[3] + 1):
+                    if (se[i + center[0]][j + center[1]]):
+                        val_max = min(
+                            val_max,
+                            get_value(img_arr, img_shape, (x + i, y + j)))
+            res_arr[x][y] = val_max
     return Image.fromarray(res_arr)
 
 
