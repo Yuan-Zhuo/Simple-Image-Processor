@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter.font import Font
 import numpy as np
 from tkinter import ttk
+from functools import partial
 
 
 # gaussian_filter
@@ -149,23 +150,55 @@ class MorphSEDialog:
         self.size = (0, 0)
         self.m = []
         self.mm = []
+        self.flat = None
         self.c = []
         self.center = []
+
+        if (self.parent.flat):
+            self.parent.window.wait_window(self.FlatDialog(self))
 
         self.parent.window.wait_window(self.SizeDialog(self))
         self.parent.window.wait_window(self.SEDialog(self))
 
         try:
             self.parent.parm = (np.array(self.mm), (np.array(self.center)))
+            self.parent.flat = self.flat
         except:
             return
+
+    class FlatDialog(tk.Toplevel):
+        def __init__(self, parent):
+            super().__init__()
+            self.parent = parent
+            self.grab_set()
+            self.title('SE Type Selection')
+
+            bnt1 = tk.Button(self,
+                             text='Flat',
+                             command=partial(self.get_flat, True))
+            bnt1.grid(row=0, column=0, columnspan=2, pady=10)
+
+            bnt2 = tk.Button(self,
+                             text='Non-Flat',
+                             command=partial(self.get_flat, False))
+            bnt2.grid(row=0, column=8, columnspan=2, pady=10)
+
+        def get_flat(self, f):
+            try:
+                flag = f
+            except:
+                pass
+            else:
+                self.parent.flat = flag
+            finally:
+                self.destroy()
 
     class SizeDialog(tk.Toplevel):
         def __init__(self, parent):
             super().__init__()
             self.parent = parent
             self.grab_set()
-            self.title('Kernel Size')
+            self.title('SE Size')
 
             self.rowtext = tk.StringVar()
             self.coltext = tk.StringVar()

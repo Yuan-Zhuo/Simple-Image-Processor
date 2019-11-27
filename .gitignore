@@ -1,6 +1,7 @@
 .vscode/
 .VSCodeCounter/
 
+img/tmp.jpg
 experiment.py
 func_test.py
 *.txt

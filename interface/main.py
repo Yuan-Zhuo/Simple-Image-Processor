@@ -48,7 +48,7 @@ class MainINTF:
                                            '*.gif', '*.tiff', '*.webp')),
                           ('all files', '*'))
         self.parm = None
-
+        self.flat = False
         self.logger = logging.Logger('message.log')
 
     def init_sytle(self):
@@ -340,74 +340,100 @@ class MainINTF:
         }
 
         try:
+            self.processing_status()
+            self.logger.info('Processing Convolution...')
+
+            cur_img = self.version.current_version()
+            cur_img = cur_img.convert('RGB')
             if (opt_type == ConvolutionOptType.GAUSSIAN_FILTER):
                 self.parm = (0, 0)
                 self.window.wait_window(GaussianDialog(self))
-                img_after = gaussian_filter(self.version.current_version(),
-                                            self.parm[0], self.parm[1])
+                img_after = gaussian_filter(cur_img, self.parm[0],
+                                            self.parm[1])
             elif (opt_type == ConvolutionOptType.CUSTOMIZE_OPERATOR):
                 self.parm = (np.zeros(0), np.zeros(0))
                 CustomizeDialog(self)
-                img_after = basic_operator(self.version.current_version(),
-                                           self.parm[0], self.parm[1])
+                img_after = basic_operator(cur_img, self.parm[0], self.parm[1])
             else:
                 func = switcher.get(opt_type)
-                img_after = func(self.version.current_version())
+                img_after = func(cur_img)
         except Exception as e:
             self.logger.error('Process Convolution: ' + str(e))
         else:
+            self.logger.info('Convolution Finish')
             self.version.add(img_after)
             self.load_file()
+        finally:
+            self.ready_status()
 
     def edit_img_morph_edge_detection(self, opt_type):
         if not self.img:
             return
 
         try:
+            self.processing_status()
+            self.logger.info('Processing Morph Edge Detection...')
+
+            cur_img = self.version.current_version()
+            cur_img = cur_img.convert('L')
+
             self.parm = (np.zeros(0), np.zeros(0))
             MorphSEDialog(self)
 
             img_after = morph_edge_detection(self.parm[0], self.parm[1],
-                                             opt_type,
-                                             self.version.current_version())
+                                             opt_type, cur_img)
         except Exception as e:
             self.logger.error('Process Morph Edge Detection: ' + str(e))
-            self.logger.error(self.parm[0])
-            self.logger.error(self.parm[1])
-            return
         else:
+            self.logger.info('Morph Edge Finish')
             self.version.add(img_after)
             self.load_file()
+        finally:
+            self.ready_status()
 
     def edit_img_morph_binary_reconstruct(self, opt_type):
         if not self.img:
             return
 
         try:
+            self.processing_status()
+            self.logger.info('Processing Binary Reconstruct...')
+
+            cur_img = self.version.current_version()
+            cur_img = cur_img.convert('L')
+
             filepath = filedialog.askopenfilename(
                 title='Select Mask Image File',
                 initialdir=self.initialdir,
                 filetypes=self.filetypes)
             img_g = Image.open(filepath)
+            img_g = img_g.convert('L')
 
             self.parm = (np.zeros(0), np.zeros(0))
             MorphSEDialog(self)
 
-            img_after = morph_binary_reconstruct(
-                self.parm[0], self.parm[1], opt_type,
-                self.version.current_version(), img_g)
+            img_after = morph_binary_reconstruct(self.parm[0], self.parm[1],
+                                                 opt_type, cur_img, img_g)
         except Exception as e:
             self.logger.error('Process Binary Reconstruct: ' + str(e))
-            return
         else:
+            self.logger.info('Binary Reconstruct Finish')
             self.version.add(img_after)
             self.load_file()
+        finally:
+            self.ready_status()
 
     def edit_img_morph_grayscale_reconstruct(self, opt_type):
         if not self.img:
             return
 
         try:
+            self.processing_status()
+            self.logger.info('Processing Morph Grayscale Reconstruct...')
+
+            cur_img = self.version.current_version()
+            cur_img = cur_img.convert('RGB')
+
             if ((opt_type == MorphGrayscaleReconstructOptType.OPEN) |
                 (opt_type == MorphGrayscaleReconstructOptType.CLOSE)):
                 img_g = None
@@ -417,36 +443,55 @@ class MainINTF:
                     initialdir=self.initialdir,
                     filetypes=self.filetypes)
                 img_g = Image.open(filepath)
+                img_g = img_g.convert('RGB')
 
+            self.flat = True
             self.parm = (np.zeros(0), np.zeros(0))
             MorphSEDialog(self)
 
-            img_after = morph_grayscale_reconstruct(
-                self.parm[0], self.parm[1], opt_type,
-                self.version.current_version(), img_g)
+            img_after = morph_grayscale_reconstruct(self.flat, self.parm[0],
+                                                    self.parm[1], opt_type,
+                                                    cur_img, img_g)
         except Exception as e:
             self.logger.error('Process Morph Grayscale Reconstruct: ' + str(e))
-            return
         else:
+            self.logger.info('Morph Grayscale Reconstruct Finish')
             self.version.add(img_after)
             self.load_file()
+        finally:
+            self.ready_status()
 
     def edit_img_morph_gradient(self, opt_type):
         if not self.img:
             return
 
         try:
+            self.processing_status()
+            self.logger.info('Processing Morph Gradient...')
+
+            cur_img = self.version.current_version()
+            cur_img = cur_img.convert('RGB')
+
+            self.flat = True
             self.parm = (np.zeros(0), np.zeros(0))
             MorphSEDialog(self)
 
-            img_after = morph_gradient(self.parm[0], self.parm[1], opt_type,
-                                       self.version.current_version())
+            img_after = morph_gradient(self.flat, self.parm[0], self.parm[1],
+                                       opt_type, cur_img)
         except Exception as e:
             self.logger.error('Process Morph Gradient: ' + str(e))
-            return
         else:
+            self.logger.info('Morph Gradient Finish')
             self.version.add(img_after)
             self.load_file()
+        finally:
+            self.ready_status()
+
+    def processing_status(self):
+        self.status_bar.config(text='processing...')
+
+    def ready_status(self):
+        self.status_bar.config(text='ready')
 
     def save_file(self, event=None):
         try:

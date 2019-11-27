@@ -90,13 +90,17 @@ def image_binary(img):
 def grayscale_image_min(img_x, img_y):
     img_x_arr, img_x_type, img_y_arr, img_y_type = image_comp(img_x, img_y)
 
-    if ((img_x_type != ImageType.GRAYSCALE) |
-        (img_y_type != ImageType.GRAYSCALE)):
-        raise TypeError('grayscale min images type error')
+    if ((img_x_type != img_y_type)):
+        raise TypeError('grayscale max images type error')
 
+    img_type = img_x_type
     img_shape = np.minimum(img_x_arr.shape, img_y_arr.shape)
-    img_x_arr = img_x_arr[:img_shape[0], :img_shape[1]]
-    img_y_arr = img_y_arr[:img_shape[0], :img_shape[1]]
+    if (img_type == ImageType.GRAYSCALE):
+        img_x_arr = img_x_arr[:img_shape[0], :img_shape[1]]
+        img_y_arr = img_y_arr[:img_shape[0], :img_shape[1]]
+    else:
+        img_x_arr = img_x_arr[:img_shape[0], :img_shape[1], :]
+        img_y_arr = img_y_arr[:img_shape[0], :img_shape[1], :]
     res_arr = np.minimum(img_x_arr, img_y_arr)
     return Image.fromarray(res_arr.astype(np.uint8))
 
@@ -104,12 +108,16 @@ def grayscale_image_min(img_x, img_y):
 def grayscale_image_max(img_x, img_y):
     img_x_arr, img_x_type, img_y_arr, img_y_type = image_comp(img_x, img_y)
 
-    if ((img_x_type != ImageType.GRAYSCALE) |
-        (img_y_type != ImageType.GRAYSCALE)):
+    if ((img_x_type != img_y_type)):
         raise TypeError('grayscale max images type error')
 
+    img_type = img_x_type
     img_shape = np.minimum(img_x_arr.shape, img_y_arr.shape)
-    img_x_arr = img_x_arr[:img_shape[0], :img_shape[1]]
-    img_y_arr = img_y_arr[:img_shape[0], :img_shape[1]]
+    if (img_type == ImageType.GRAYSCALE):
+        img_x_arr = img_x_arr[:img_shape[0], :img_shape[1]]
+        img_y_arr = img_y_arr[:img_shape[0], :img_shape[1]]
+    else:
+        img_x_arr = img_x_arr[:img_shape[0], :img_shape[1], :]
+        img_y_arr = img_y_arr[:img_shape[0], :img_shape[1], :]
     res_arr = np.maximum(img_x_arr, img_y_arr)
     return Image.fromarray(res_arr.astype(np.uint8))

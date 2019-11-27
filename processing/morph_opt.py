@@ -10,15 +10,13 @@ def morph_edge_detection(se, center, opt_type, img):
     if (opt_type == MorphEdgeDetectionOptType.INVALID):
         raise TypeError('invalid edge detection opt')
 
-    if (opt_type == MorphEdgeDetectionOptType.INTERNAL):
-        img_l = image_binary(img)
-    else:
-        img_l = binary_dilation(img, se, center)
+    img_l = image_binary(img)
+    if (opt_type != MorphEdgeDetectionOptType.INTERNAL):
+        img_l = binary_dilation(img_l, se, center)
 
-    if (opt_type == MorphEdgeDetectionOptType.EXTERNAL):
-        img_r = image_binary(img)
-    else:
-        img_r = binary_erosion(img, se, center)
+    img_r = image_binary(img)
+    if (opt_type != MorphEdgeDetectionOptType.EXTERNAL):
+        img_r = binary_erosion(img_r, se, center)
 
     return image_absdiff(img_l, img_r)
 
@@ -49,7 +47,7 @@ def morph_binary_reconstruct(se, center, opt_type, img_f, img_g):
 
 
 # Types: geodesic dilation, geodesic erosion, open, close
-def morph_grayscale_reconstruct(se, center, opt_type, img_f, img_g=None):
+def morph_grayscale_reconstruct(flat, se, center, opt_type, img_f, img_g=None):
     if (opt_type == MorphGrayscaleReconstructOptType.INVALID):
         raise TypeError('invalid reconstruct opt')
 
@@ -63,10 +61,16 @@ def morph_grayscale_reconstruct(se, center, opt_type, img_f, img_g=None):
         else:
             raise TypeError('invalid arguments for reconstruct')
 
+    if flat:
+        img_f = img_f.convert('L')
+        img_g = img_g.convert('L')
+
     img_res = None
     reconstruct_switcher = {
-        MorphGrayscaleReconstructOptType.GEODESIC_DILATION: geodesic_dilation,
-        MorphGrayscaleReconstructOptType.GEODESIC_EROSION: geodesic_erosion
+        MorphGrayscaleReconstructOptType.GEODESIC_DILATION:
+        binary_geodesic_dilation if flat else geodesic_dilation,
+        MorphGrayscaleReconstructOptType.GEODESIC_EROSION:
+        binary_geodesic_erosion if flat else geodesic_erosion
     }
 
     func = reconstruct_switcher.get(opt_type)
@@ -81,18 +85,23 @@ def morph_grayscale_reconstruct(se, center, opt_type, img_f, img_g=None):
 
 
 # Types: standard, internal, external
-def morph_gradient(se, center, opt_type, img):
+def morph_gradient(flat, se, center, opt_type, img):
     if (opt_type == MorphGradientOptType.INVALID):
         raise TypeError('invalid gradient opt')
+
+    if flat:
+        img = img.convert('L')
 
     if (opt_type == MorphGradientOptType.INTERNAL):
         img_l = img
     else:
-        img_l = grayscale_dilation(img, se, center)
+        img_l = binary_dilation(
+            img, se, center) if flat else grayscale_dilation(img, se, center)
 
     if (opt_type == MorphGradientOptType.EXTERNAL):
         img_r = img
     else:
-        img_r = grayscale_erosion(img, se, center)
+        img_r = binary_erosion(img, se, center) if flat else grayscale_erosion(
+            img, se, center)
 
     return image_divide(image_absdiff(img_l, img_r), 2)
