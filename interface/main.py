@@ -10,12 +10,15 @@ import os
 import numpy as np
 import webbrowser
 import base64
+import logging
 
 from processing.operators import basic_operator, sobel_operator, prewitt_operator, roberts_operator
 from processing.filters import mean_filter, median_filter, gaussian_filter
-from interface.opt_type import *
+from processing.morph_opt import morph_binary_reconstruct, morph_edge_detection, morph_gradient, morph_grayscale_reconstruct
+from processing.opt_type import *
+
 from interface.version import Version
-from interface.box import GaussianDialog, CustomizeDialog
+from interface.box import GaussianDialog, CustomizeDialog, MorphSEDialog
 from interface.icon import icon_img
 
 
@@ -45,6 +48,8 @@ class MainINTF:
                                            '*.gif', '*.tiff', '*.webp')),
                           ('all files', '*'))
         self.parm = None
+
+        self.logger = logging.Logger('message.log')
 
     def init_sytle(self):
         self.menu_font = ('Comic Sans MS', 10)
@@ -139,9 +144,18 @@ class MainINTF:
         self.edge_detection_submenu = tk.Menu(self.morph_binary_menu,
                                               tearoff=False)
 
-        self.edge_detection_submenu.add_command(label='standard', command=None)
-        self.edge_detection_submenu.add_command(label='internal', command=None)
-        self.edge_detection_submenu.add_command(label='external', command=None)
+        self.edge_detection_submenu.add_command(
+            label='standard',
+            command=partial(self.edit_img_morph_edge_detection,
+                            MorphEdgeDetectionOptType.STANDRARD))
+        self.edge_detection_submenu.add_command(
+            label='internal',
+            command=partial(self.edit_img_morph_edge_detection,
+                            MorphEdgeDetectionOptType.INTERNAL))
+        self.edge_detection_submenu.add_command(
+            label='external',
+            command=partial(self.edit_img_morph_edge_detection,
+                            MorphEdgeDetectionOptType.EXTERNAL))
 
         self.morph_binary_menu.add_cascade(label='Edge Detection',
                                            menu=self.edge_detection_submenu)
@@ -151,9 +165,14 @@ class MainINTF:
                                                      tearoff=False)
 
         self.reconstruction_binary_submenu.add_command(
-            label='conditional dilation', command=None)
+            label='conditional dilation',
+            command=partial(
+                self.edit_img_morph_binary_reconstruct,
+                MorphBinaryReconstructOptType.CONDITIONAL_DILATION))
         self.reconstruction_binary_submenu.add_command(
-            label='conditional erosion', command=None)
+            label='conditional erosion',
+            command=partial(self.edit_img_morph_binary_reconstruct,
+                            MorphBinaryReconstructOptType.CONDITIONAL_EROSION))
 
         self.morph_binary_menu.add_cascade(
             label='Reconstruction', menu=self.reconstruction_binary_submenu)
@@ -169,13 +188,22 @@ class MainINTF:
             self.morph_grayscale_menu, tearoff=False)
 
         self.reconstruction_grayscale_submenu.add_command(
-            label='geodesic dilation', command=None)
+            label='geodesic dilation',
+            command=partial(
+                self.edit_img_morph_grayscale_reconstruct,
+                MorphGrayscaleReconstructOptType.GEODESIC_DILATION))
         self.reconstruction_grayscale_submenu.add_command(
-            label='geodesic erosion', command=None)
+            label='geodesic erosion',
+            command=partial(self.edit_img_morph_grayscale_reconstruct,
+                            MorphGrayscaleReconstructOptType.GEODESIC_EROSION))
         self.reconstruction_grayscale_submenu.add_command(
-            label='open operation', command=None)
+            label='open operation',
+            command=partial(self.edit_img_morph_grayscale_reconstruct,
+                            MorphGrayscaleReconstructOptType.OPEN))
         self.reconstruction_grayscale_submenu.add_command(
-            label='close operation', command=None)
+            label='close operation',
+            command=partial(self.edit_img_morph_grayscale_reconstruct,
+                            MorphGrayscaleReconstructOptType.CLOSE))
 
         self.morph_grayscale_menu.add_cascade(
             label='Reconstruction', menu=self.reconstruction_grayscale_submenu)
@@ -184,9 +212,18 @@ class MainINTF:
         self.gradient_submenu = tk.Menu(self.morph_grayscale_menu,
                                         tearoff=False)
 
-        self.gradient_submenu.add_command(label='standard', command=None)
-        self.gradient_submenu.add_command(label='external', command=None)
-        self.gradient_submenu.add_command(label='internal', command=None)
+        self.gradient_submenu.add_command(label='standard',
+                                          command=partial(
+                                              self.edit_img_morph_gradient,
+                                              MorphGradientOptType.STANDRARD))
+        self.gradient_submenu.add_command(label='internal',
+                                          command=partial(
+                                              self.edit_img_morph_gradient,
+                                              MorphGradientOptType.INTERNAL))
+        self.gradient_submenu.add_command(label='external',
+                                          command=partial(
+                                              self.edit_img_morph_gradient,
+                                              MorphGradientOptType.EXTERNAL))
 
         self.morph_grayscale_menu.add_cascade(label='Gradient',
                                               menu=self.gradient_submenu)
@@ -316,7 +353,96 @@ class MainINTF:
             else:
                 func = switcher.get(opt_type)
                 img_after = func(self.version.current_version())
-        except:
+        except Exception as e:
+            self.logger.error('Process Convolution: ' + str(e))
+        else:
+            self.version.add(img_after)
+            self.load_file()
+
+    def edit_img_morph_edge_detection(self, opt_type):
+        if not self.img:
+            return
+
+        try:
+            self.parm = (np.zeros(0), np.zeros(0))
+            MorphSEDialog(self)
+
+            img_after = morph_edge_detection(self.parm[0], self.parm[1],
+                                             opt_type,
+                                             self.version.current_version())
+        except Exception as e:
+            self.logger.error('Process Morph Edge Detection: ' + str(e))
+            self.logger.error(self.parm[0])
+            self.logger.error(self.parm[1])
+            return
+        else:
+            self.version.add(img_after)
+            self.load_file()
+
+    def edit_img_morph_binary_reconstruct(self, opt_type):
+        if not self.img:
+            return
+
+        try:
+            filepath = filedialog.askopenfilename(
+                title='Select Mask Image File',
+                initialdir=self.initialdir,
+                filetypes=self.filetypes)
+            img_g = Image.open(filepath)
+
+            self.parm = (np.zeros(0), np.zeros(0))
+            MorphSEDialog(self)
+
+            img_after = morph_binary_reconstruct(
+                self.parm[0], self.parm[1], opt_type,
+                self.version.current_version(), img_g)
+        except Exception as e:
+            self.logger.error('Process Binary Reconstruct: ' + str(e))
+            return
+        else:
+            self.version.add(img_after)
+            self.load_file()
+
+    def edit_img_morph_grayscale_reconstruct(self, opt_type):
+        if not self.img:
+            return
+
+        try:
+            if ((opt_type == MorphGrayscaleReconstructOptType.OPEN) |
+                (opt_type == MorphGrayscaleReconstructOptType.CLOSE)):
+                img_g = None
+            else:
+                filepath = filedialog.askopenfilename(
+                    title='Select Mask Image File',
+                    initialdir=self.initialdir,
+                    filetypes=self.filetypes)
+                img_g = Image.open(filepath)
+
+            self.parm = (np.zeros(0), np.zeros(0))
+            MorphSEDialog(self)
+
+            img_after = morph_grayscale_reconstruct(
+                self.parm[0], self.parm[1], opt_type,
+                self.version.current_version(), img_g)
+        except Exception as e:
+            self.logger.error('Process Morph Grayscale Reconstruct: ' + str(e))
+            return
+        else:
+            self.version.add(img_after)
+            self.load_file()
+
+    def edit_img_morph_gradient(self, opt_type):
+        if not self.img:
+            return
+
+        try:
+            self.parm = (np.zeros(0), np.zeros(0))
+            MorphSEDialog(self)
+
+            img_after = morph_gradient(self.parm[0], self.parm[1], opt_type,
+                                       self.version.current_version())
+        except Exception as e:
+            self.logger.error('Process Morph Gradient: ' + str(e))
             return
         else:
             self.version.add(img_after)

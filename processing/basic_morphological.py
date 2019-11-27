@@ -54,13 +54,13 @@ def binary_erosion(img, se, center):
 # 二值测地膨胀
 def binary_geodesic_dilation(img_f, img_g, se, center):
     img_res = binary_dilation(img_f, se, center)
-    return grayscale_image_min(img_res, img_f)
+    return grayscale_image_min(img_res, img_g)
 
 
 # 二值测地腐蚀
 def binary_geodesic_erosion(img_f, img_g, se, center):
     img_res = binary_erosion(img_f, se, center)
-    return grayscale_image_max(img_res, img_f)
+    return grayscale_image_max(img_res, img_g)
 
 
 # 灰度膨胀-结构元 0-255
@@ -142,10 +142,10 @@ def grayscale_erosion(img, se, center):
 # 测地膨胀
 def geodesic_dilation(img_f, img_g, se, center):
     img_res = grayscale_dilation(img_f, se, center)
-    return grayscale_image_min(img_res, img_f)
+    return grayscale_image_min(img_res, img_g)
 
 
 # 测地腐蚀
 def geodesic_erosion(img_f, img_g, se, center):
     img_res = grayscale_erosion(img_f, se, center)
-    return grayscale_image_max(img_res, img_f)
+    return grayscale_image_max(img_res, img_g)

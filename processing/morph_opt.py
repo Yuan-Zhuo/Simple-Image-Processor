@@ -1,22 +1,22 @@
 from PIL import Image
 from processing.basic_morphological import geodesic_dilation, geodesic_erosion, binary_dilation, binary_erosion, grayscale_dilation, grayscale_erosion, binary_geodesic_dilation, binary_geodesic_erosion
-from processing.image_opt import image_absdiff, grayscale_image_max, grayscale_image_min, image_equal, image_divide
-from interface.opt_type import MorphBinaryReconstructOptType, MorphEdgeDetectionOptType, MorphGradientOptType, MorphGrayscaleReconstructOptType
+from processing.image_opt import image_absdiff, grayscale_image_max, grayscale_image_min, image_equal, image_divide, image_binary
+from processing.opt_type import MorphBinaryReconstructOptType, MorphEdgeDetectionOptType, MorphGradientOptType, MorphGrayscaleReconstructOptType
 import numpy as np
 
 
 # Types: standard, internal, external
 def morph_edge_detection(se, center, opt_type, img):
-    if (opt_type == MorphGradientOptType.INVALID):
+    if (opt_type == MorphEdgeDetectionOptType.INVALID):
         raise TypeError('invalid edge detection opt')
 
-    if (opt_type == MorphGradientOptType.INTERNAL):
-        img_l = img
+    if (opt_type == MorphEdgeDetectionOptType.INTERNAL):
+        img_l = image_binary(img)
     else:
         img_l = binary_dilation(img, se, center)
 
-    if (opt_type == MorphGradientOptType.EXTERNAL):
-        img_r = img
+    if (opt_type == MorphEdgeDetectionOptType.EXTERNAL):
+        img_r = image_binary(img)
     else:
         img_r = binary_erosion(img, se, center)
 
@@ -37,10 +37,11 @@ def morph_binary_reconstruct(se, center, opt_type, img_f, img_g):
     }
 
     func = reconstruct_switcher.get(opt_type)
-    img_res = None
-    img_tmp = img_f
+    img_g_b = image_binary(img_g)
+    img_tmp = image_binary(img_f)
+    img_res = img_tmp
     while True:
-        img_tmp = func(img_tmp, img_g, se, center)
+        img_tmp = func(img_tmp, img_g_b, se, center)
         if image_equal(img_tmp, img_res):
             break
         img_res = img_tmp
@@ -69,8 +70,8 @@ def morph_grayscale_reconstruct(se, center, opt_type, img_f, img_g=None):
     }
 
     func = reconstruct_switcher.get(opt_type)
-    img_res = None
     img_tmp = img_f
+    img_res = img_tmp
     while True:
         img_tmp = func(img_tmp, img_g, se, center)
         if image_equal(img_tmp, img_res):

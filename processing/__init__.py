@@ -1,5 +1,7 @@
 from .operators import *
 from .filters import *
+from .morph_opt import *
+from .opt_type import *
 
 # test
 from .basic_convolution import basic_convolution

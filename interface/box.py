@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter.font import Font
 import numpy as np
+from tkinter import ttk
 
 
 # gaussian_filter
@@ -137,5 +138,107 @@ class CustomizeDialog:
             else:
                 self.parent.mm1 = mm1
                 self.parent.mm2 = mm2
+            finally:
+                self.destroy()
+
+
+# morph_opt
+class MorphSEDialog:
+    def __init__(self, parent):
+        self.parent = parent
+        self.size = (0, 0)
+        self.m = []
+        self.mm = []
+        self.c = []
+        self.center = []
+
+        self.parent.window.wait_window(self.SizeDialog(self))
+        self.parent.window.wait_window(self.SEDialog(self))
+
+        try:
+            self.parent.parm = (np.array(self.mm), (np.array(self.center)))
+        except:
+            return
+
+    class SizeDialog(tk.Toplevel):
+        def __init__(self, parent):
+            super().__init__()
+            self.parent = parent
+            self.grab_set()
+            self.title('Kernel Size')
+
+            self.rowtext = tk.StringVar()
+            self.coltext = tk.StringVar()
+
+            lb1 = tk.Label(self, text='Enter the row:')
+            lb1.grid(row=0, column=0, padx=5, pady=5)
+            ent1 = tk.Entry(self, width=15, textvariable=self.rowtext)
+            ent1.grid(row=0, column=1, padx=5, pady=5)
+
+            lb2 = tk.Label(self, text='Enter the col:')
+            lb2.grid(row=1, column=0, padx=5, pady=5)
+            ent2 = tk.Entry(self, width=15, textvariable=self.coltext)
+            ent2.grid(row=1, column=1, padx=5, pady=5)
+
+            bnt = tk.Button(self, text='Enter', command=self.get_size)
+            bnt.grid(row=2, column=0, columnspan=2, pady=10)
+
+        def get_size(self):
+            try:
+                row = int(eval(self.rowtext.get()))
+                col = int(eval(self.coltext.get()))
+            except:
+                pass
+            else:
+                self.parent.size = (row, col)
+            finally:
+                self.destroy()
+
+    class SEDialog(tk.Toplevel):
+        def __init__(self, parent):
+            super().__init__()
+            self.parent = parent
+            try:
+                self.size = self.parent.size
+                assert ((self.size[0] > 0) & (self.size[1] > 0))
+            except:
+                self.destroy()
+
+            self.grab_set()
+            self.title('Input')
+
+            lb1 = tk.Label(self, text='SE: ')
+            lb1.grid(row=0, column=0, padx=5, pady=5)
+
+            for i in range(self.size[0]):
+                line = []
+                for j in range(self.size[1]):
+                    temporarytext1 = tk.StringVar()
+                    ent = tk.Entry(self, width=3, textvariable=temporarytext1)
+                    ent.grid(row=i, column=j + 2, padx=5, pady=5)
+                    line.append(temporarytext1)
+                self.parent.m.append(line)
+
+            lb2 = tk.Label(self, text='center: ')
+            lb2.grid(row=self.size[0] + 1, column=0, padx=5, pady=5)
+
+            for i in range(2):
+                temporarytext2 = tk.StringVar()
+                ent = tk.Entry(self, width=3, textvariable=temporarytext2)
+                ent.grid(row=self.size[0] + 1, column=i + 2, padx=5, pady=5)
+                self.parent.c.append(temporarytext1)
+
+            btn = tk.Button(self, text='Enter', command=self.get_se)
+            btn.grid(row=self.size[0] + 2, column=self.size[1] + 3, padx=5)
+
+        def get_se(self):
+            try:
+                mm = [[int(j.get()) for j in i] for i in self.parent.m]
+                center = [int(i.get()) for i in self.parent.c]
+            except:
+                pass
+            else:
+                self.parent.mm = mm
+                self.parent.center = center
             finally:
                 self.destroy()
