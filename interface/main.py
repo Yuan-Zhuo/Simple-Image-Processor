@@ -15,7 +15,7 @@ import logging
 from processing.operators import basic_operator, sobel_operator, prewitt_operator, roberts_operator
 from processing.filters import mean_filter, median_filter, gaussian_filter
 from processing.morph_opt import morph_binary_reconstruct, morph_edge_detection, morph_gradient, morph_grayscale_reconstruct
-from processing.opt_type import *
+from processing.opt_type import MorphBinaryReconstructOptType, MorphEdgeDetectionOptType, MorphGradientOptType, MorphGrayscaleReconstructOptType, ConvolutionOptType
 
 from interface.version import Version
 from interface.box import GaussianDialog, CustomizeDialog, MorphSEDialog
