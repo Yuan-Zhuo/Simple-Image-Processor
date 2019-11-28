@@ -57,7 +57,20 @@ def parse_image(img):
     except:
         return None, ImageType.INVALID
     else:
-        return img_arr.astype(np.int32), img_type
+        return img_arr.astype(np.uint8), img_type
+
+
+def parse_binary_image(img):
+    try:
+        img_arr = np.array(img)
+        assert ((len(img_arr.shape) == 2))
+        img_type = ImageType.GRAYSCALE
+        for a in np.nditer(img_arr):
+            assert ((a in (0, 255)))
+    except:
+        return None, ImageType.INVALID
+    else:
+        return img_arr.astype(np.uint8), img_type
 
 
 def get_value(img_arr, img_shape, point):

@@ -1,20 +1,20 @@
 import numpy as np
 from PIL import Image
-from processing.util import parse_se, parse_image, ImageType, get_value, parse_binary_se
+from processing.util import parse_se, parse_image, ImageType, get_value, parse_binary_se, parse_binary_image
 from processing.image_opt import grayscale_image_min, grayscale_image_max, image_binary
 import math
 
 
 # 二值膨胀-结构元 0,1 图像 0,255
-def binary_dilation(img, se, center, bin=False):
+def binary_dilation(img, se, center, bin_img):
     wd_tuple = parse_binary_se(se, center)
     if (wd_tuple == None):
         raise TypeError('invalid se')
 
-    if (bin):
-        # img = img.convert('L')
-        # img_arr = image_binary(img)
-        img_type = ImageType.GRAYSCALE
+    if (bin_img):
+        img_arr, img_type = parse_binary_image(img)
+        if (img_type != ImageType.GRAYSCALE):
+            raise TypeError('invalid image')
     else:
         img_arr, img_type = parse_image(img)
         if (img_type == ImageType.INVALID):
@@ -48,15 +48,15 @@ def binary_dilation(img, se, center, bin=False):
 
 
 # 二值腐蚀-结构元 0,1 图像 0,255
-def binary_erosion(img, se, center, bin=False):
+def binary_erosion(img, se, center, bin_img):
     wd_tuple = parse_binary_se(se, center)
     if (wd_tuple == None):
         raise TypeError('invalid se')
 
-    if (bin):
-        # img = img.convert('L')
-        # img_arr = image_binary(img)
-        img_type = ImageType.GRAYSCALE
+    if (bin_img):
+        img_arr, img_type = parse_binary_image(img)
+        if (img_type != ImageType.GRAYSCALE):
+            raise TypeError('invalid image')
     else:
         img_arr, img_type = parse_image(img)
         if (img_type == ImageType.INVALID):
@@ -90,18 +90,18 @@ def binary_erosion(img, se, center, bin=False):
 
 
 # 二值测地膨胀
-def binary_geodesic_dilation(img_f, img_g, se, center):
+def binary_geodesic_dilation(img_f, img_g, se, center, bin_img):
     # img_f = img_f.convert('L')
     # img_g = img_g.convert('L')
-    img_res = binary_dilation(img_f, se, center, bin=True)
+    img_res = binary_dilation(img_f, se, center, bin_img)
     return grayscale_image_min(img_res, img_g)
 
 
 # 二值测地腐蚀
-def binary_geodesic_erosion(img_f, img_g, se, center):
+def binary_geodesic_erosion(img_f, img_g, se, center, bin_img):
     # img_f = img_f.convert('L')
     # img_g = img_g.convert('L')
-    img_res = binary_erosion(img_f, se, center, bin=True)
+    img_res = binary_erosion(img_f, se, center, bin_img)
     return grayscale_image_max(img_res, img_g)
 
 

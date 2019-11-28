@@ -2,6 +2,7 @@
 .VSCodeCounter/
 
 img/tmp.jpg
+img/face.jpg
 experiment.py
 func_test.py
 *.txt

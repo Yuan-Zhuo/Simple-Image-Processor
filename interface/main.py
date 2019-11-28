@@ -11,6 +11,8 @@ import numpy as np
 import webbrowser
 import base64
 import logging
+# debug
+# import sys, traceback
 
 from processing.operators import basic_operator, sobel_operator, prewitt_operator, roberts_operator
 from processing.filters import mean_filter, median_filter, gaussian_filter
@@ -49,7 +51,14 @@ class MainINTF:
                           ('all files', '*'))
         self.parm = None
         self.flat = False
-        self.logger = logging.Logger('message.log')
+
+        self.logfile = 'message.log'
+        self.logger = logging.getLogger()
+        self.file_handler = logging.FileHandler(self.logfile, 'a', 'utf-8')
+        self.file_handler.setFormatter(
+            logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s'))
+        self.logger.addHandler(self.file_handler)
+        self.logger.setLevel(logging.ERROR)
 
     def init_sytle(self):
         self.menu_font = ('Comic Sans MS', 10)
@@ -346,12 +355,12 @@ class MainINTF:
             cur_img = self.version.current_version()
             cur_img = cur_img.convert('RGB')
             if (opt_type == ConvolutionOptType.GAUSSIAN_FILTER):
-                self.parm = (0, 0)
+                self.parm = (-1, -1)
                 self.window.wait_window(GaussianDialog(self))
                 img_after = gaussian_filter(cur_img, self.parm[0],
                                             self.parm[1])
             elif (opt_type == ConvolutionOptType.CUSTOMIZE_OPERATOR):
-                self.parm = (np.zeros(0), np.zeros(0))
+                self.parm = (None, None)
                 CustomizeDialog(self)
                 img_after = basic_operator(cur_img, self.parm[0], self.parm[1])
             else:
@@ -377,7 +386,7 @@ class MainINTF:
             cur_img = self.version.current_version()
             cur_img = cur_img.convert('L')
 
-            self.parm = (np.zeros(0), np.zeros(0))
+            self.parm = (None, None)
             MorphSEDialog(self)
 
             img_after = morph_edge_detection(self.parm[0], self.parm[1],
@@ -409,7 +418,7 @@ class MainINTF:
             img_g = Image.open(filepath)
             img_g = img_g.convert('L')
 
-            self.parm = (np.zeros(0), np.zeros(0))
+            self.parm = (None, None)
             MorphSEDialog(self)
 
             img_after = morph_binary_reconstruct(self.parm[0], self.parm[1],
@@ -446,7 +455,7 @@ class MainINTF:
                 img_g = img_g.convert('RGB')
 
             self.flat = True
-            self.parm = (np.zeros(0), np.zeros(0))
+            self.parm = (None, None)
             MorphSEDialog(self)
 
             img_after = morph_grayscale_reconstruct(self.flat, self.parm[0],
@@ -473,7 +482,7 @@ class MainINTF:
             cur_img = cur_img.convert('RGB')
 
             self.flat = True
-            self.parm = (np.zeros(0), np.zeros(0))
+            self.parm = (None, None)
             MorphSEDialog(self)
 
             img_after = morph_gradient(self.flat, self.parm[0], self.parm[1],

@@ -259,7 +259,7 @@ class MorphSEDialog:
                 temporarytext2 = tk.StringVar()
                 ent = tk.Entry(self, width=3, textvariable=temporarytext2)
                 ent.grid(row=self.size[0] + 1, column=i + 2, padx=5, pady=5)
-                self.parent.c.append(temporarytext1)
+                self.parent.c.append(temporarytext2)
 
             btn = tk.Button(self, text='Enter', command=self.get_se)
             btn.grid(row=self.size[0] + 2, column=self.size[1] + 3, padx=5)
