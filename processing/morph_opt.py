@@ -121,7 +121,7 @@ def morph_gradient(flat, se, center, opt_type, img):
         if flat:
             img_l = binary_dilation(img, se, center, bin_img=False)
         else:
-            grayscale_dilation(img, se, center)
+            img_l = grayscale_dilation(img, se, center)
 
     if (opt_type == MorphGradientOptType.EXTERNAL):
         img_r = img
@@ -129,6 +129,6 @@ def morph_gradient(flat, se, center, opt_type, img):
         if flat:
             img_r = binary_erosion(img, se, center, bin_img=False)
         else:
-            grayscale_erosion(img, se, center)
+            img_r = grayscale_erosion(img, se, center)
 
     return image_divide(image_absdiff(img_l, img_r), 2)
