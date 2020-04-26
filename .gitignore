@@ -6,6 +6,8 @@ img/face.jpg
 experiment.py
 func_test.py
 *.txt
+img/sample/*
+img/scenes/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
